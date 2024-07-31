@@ -481,25 +481,28 @@ def inject_files_into_iso(
     )
     p.ok("MBR extraction complete.")
 
+    arch = "amd" if "amd64" in path_to_input_iso_file.name else "386"
+
     # For some reason this 'xen' thing takes up an extra 50-70ish MB compared
     # to the original iso ... not sure to understand ... but doesn't seem to be
     # actually used anywhere so let's get rid of it to save space ...
-    os.system(f"chmod +w '{path_to_extracted_iso_dir}/install.amd'")
-    os.system(f"chmod -R +w '{path_to_extracted_iso_dir}/install.amd/xen'")
-    os.system(f"rm -rf '{path_to_extracted_iso_dir}/install.amd/xen'")
-    os.system(f"chmod -w '{path_to_extracted_iso_dir}/install.amd'")
+    os.system(f"chmod +w '{path_to_extracted_iso_dir}/install.{arch}'")
+    os.system(f"chmod -R +w '{path_to_extracted_iso_dir}/install.{arch}/xen'")
+    os.system(f"rm -rf '{path_to_extracted_iso_dir}/install.{arch}/xen'")
+    os.system(f"chmod -w '{path_to_extracted_iso_dir}/install.{arch}'")
 
     # ADd the input files to the extracted ISO
-    os.system(f"chmod +w {path_to_extracted_iso_dir}/isolinux/*")
+    os.system(f"chmod -R +w {path_to_extracted_iso_dir}/isolinux")
     os.system(f"cp -r ./files_to_inject/* {path_to_extracted_iso_dir}/")
-    os.system(f"chmod -w {path_to_extracted_iso_dir}/isolinux/*")
+    os.system(f'sed "s@__ARCH__@{arch}@g" -i "{path_to_extracted_iso_dir}/isolinux/menu.cfg"')
+    os.system(f"chmod -R -w {path_to_extracted_iso_dir}/isolinux")
 
     # This stuff gotta go into the initrd with cpio trick etc
     temp_file_dir = TemporaryDirectory()
     os.system(f"mkdir -p {temp_file_dir.name}/usr/share/graphics/")
     os.system(f"cp ./files_to_inject/logo.png {temp_file_dir.name}/usr/share/graphics/logo_debian.png")
     append_file_contents_to_initrd_archive(
-        path_to_extracted_iso_dir/"install.amd"/"gtk"/"initrd.gz",
+        path_to_extracted_iso_dir/f"install.{arch}"/"gtk"/"initrd.gz",
         temp_file_dir.name,
         "usr/share/graphics/logo_debian.png"
     )
