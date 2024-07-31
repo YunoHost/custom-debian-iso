@@ -110,25 +110,6 @@ def main():
             exit(0)
 
     elif args.subparser_name == "inject":
-        image_file_name = Path(get_debian_iso_urls()["image_file"]["name"])
-        if not path_to_output_file:
-            output_file_name = image_file_name.stem + "-modified" + image_file_name.suffix
-            if path_to_output_dir:
-                path_to_output_file = path_to_output_dir / output_file_name
-            else:
-                path_to_output_file = Path.cwd() / output_file_name
-
-        # verify input file paths
-        input_file_paths = []
-        for path in args.FILES:
-            path = Path(path)
-            if "~" in str(path):
-                path = Path(path).expanduser()
-            path = Path(path).resolve()
-            if not path.is_file():
-                p.error(f"No such file: '{path}'.")
-                exit(1)
-            input_file_paths.append(path)
 
         # verify image file path if set by user or download fresh iso if unset
         temp_iso_dir = None
@@ -141,18 +122,17 @@ def main():
                 p.error(f"No such file: '{path_to_image_file}'.")
                 exit(1)
         else:
-            # download a Debian ISO to a temporary directory
-            p.info("Downloading the latest Debian x86-64 netinst image...")
-            temp_iso_dir = TemporaryDirectory()
-            path_to_iso_dir = Path(temp_iso_dir.name)
-            path_to_image_file = path_to_iso_dir/image_file_name
-            download_and_verify_debian_iso(path_to_image_file, printer=p)
+            p.error("Must provide the input ISO file")
+            exit(1)
+
+        if not path_to_output_file:
+            path_to_output_file = str(path_to_image_file).replace(".iso", "-modified.iso")
 
         # inject the input files
         inject_files_into_iso(
             path_to_output_file,
             path_to_image_file,
-            input_file_paths,
+            iso_filesystem_name="YunoHost install image",
             printer=p,
         )
 

@@ -62,14 +62,6 @@ def get_argument_parser():
 
     # register arguments for the 'inject' subcommand
     subparser_inject.add_argument(
-        "FILES",
-        action='store',
-        type=str,
-        nargs='+',
-        metavar='FILES',
-        help="Paths to all input files you want to inject",
-    )
-    subparser_inject.add_argument(
         "-i",
         "--image-file",
         action='store',

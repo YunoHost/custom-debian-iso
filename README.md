@@ -12,14 +12,10 @@ This short guide explains how to build a Debian ISO with a customized and automa
 1. make sure you have all the [required software](#build-machine) installed
 2. clone this repo and `cd` into your local copy
 3. (optional) create and activate a virtual environment: `python3 -m venv .venv && . .venv/bin/activate`
-4. install the required python packages: `pip install --user -r requirements.txt`
-5. download an example preseed file: `./udib.py -o preseed.cfg get preseed-file-basic`
-6. customize your installation by editing `preseed.cfg` (the comments are pretty self-explanatory)
-7. create a Debian ISO with your preseed file: `./udib.py -o my-image.iso inject preseed.cfg`
-8. boot from your newly created ISO `my-image.iso` on your target machine (or in a VM)
-9. in the Debian installer menu, navigate to *Advanced options > Automated install*
-10. drink some coffee
-11. return to your new Debian system
+4. install the required python packages: `pip install -r requirements.txt`
+5. all the Debian ISOs are available in <https://cdimage.debian.org/mirror/cdimage/archive/>
+5. create the custom ISOs: `./udib.py inject -i debian-11.10.0-amd64-netinst.iso`
+6. boot from the `-modified.iso` on your target machine (or in a VM)
 
 Depending on how many answers you provided in the preseed file, the installation may require some manual interaction.
 Preseed files are very powerful, and if you need more customization you can have a deeper look into [how they work](#whats-preseeding).

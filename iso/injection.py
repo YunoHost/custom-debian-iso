@@ -6,7 +6,7 @@ inside the ISO and rebuilding bootable ISOs from directories on the
 local filesystem.
 
 """
-
+import os
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import gzip
@@ -80,7 +80,8 @@ def extract_iso(path_to_output_dir, path_to_input_file):
 
 def append_file_contents_to_initrd_archive(
         path_to_initrd_archive,
-        path_to_input_file
+        base_dir,
+        relative_path_to_input_file
 ):
     """Appends the input file to the specified initrd archive.
 
@@ -117,20 +118,12 @@ def append_file_contents_to_initrd_archive(
         path_to_initrd_archive = Path(path_to_initrd_archive).expanduser()
     path_to_initrd_archive = Path(path_to_initrd_archive).resolve()
 
-    if "~" in str(path_to_input_file):
-        path_to_input_file = Path(path_to_input_file).expanduser()
-    path_to_input_file = Path(path_to_input_file).resolve()
-
     # check if initrd file exists and has the correct name
     if not path_to_initrd_archive.is_file():
         raise FileNotFoundError(f"No such file: '{path_to_initrd_archive}'.")
     if not path_to_initrd_archive.name == "initrd.gz":
         raise AssertionError(f"Does not seem to be an initrd.gz archive: "
                              f"'{path_to_initrd_archive.name}'.")
-
-    # check if input file exists
-    if not path_to_input_file.is_file():
-        raise FileNotFoundError(f"No such file: '{path_to_input_file}'.")
 
     # make archive and its parent directory temporarily writable
     path_to_initrd_archive.chmod(0o644)
@@ -153,18 +146,18 @@ def append_file_contents_to_initrd_archive(
                 "cpio", "-H", "newc", "-o", "-A",
                 "-F", str(path_to_initrd_extracted.resolve())
             ],
-            cwd=path_to_input_file.resolve().parent,
+            cwd=base_dir,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
         completed_process.communicate(
-            input=str(path_to_input_file.name).encode()
+            input=str(relative_path_to_input_file).encode()
         )
 
     except subprocess.CalledProcessError:
         raise RuntimeError(
-            f"Failed while appending contents of '{path_to_input_file}' to "
+            f"Failed while appending contents of '{relative_path_to_input_file}' to "
             f"'{path_to_initrd_archive}'."
         )
 
@@ -420,7 +413,6 @@ def repack_iso(path_to_output_iso,
 def inject_files_into_iso(
         path_to_output_iso_file,
         path_to_input_iso_file,
-        input_file_paths,
         iso_filesystem_name="Debian",
         printer=None,
 ):
@@ -461,17 +453,6 @@ def inject_files_into_iso(
     if not path_to_output_iso_file.parent.is_dir():
         raise NotADirectoryError(f"No such directory: '{path_to_output_iso_file.parent}'.")
 
-    input_file_paths_old = input_file_paths.copy()
-    input_file_paths = []
-    for path in input_file_paths_old:
-        if "~" in str(path):
-            path = Path(path).expanduser()
-        path = Path(path).resolve()
-        if not path.is_file():
-            raise FileNotFoundError(f"No such file: '{path}'.")
-        input_file_paths.append(path)
-    del input_file_paths_old
-
     if printer is None:
         p = Printer()
     else:
@@ -500,18 +481,28 @@ def inject_files_into_iso(
     )
     p.ok("MBR extraction complete.")
 
-    # append all input files to the extracted ISO's initrd
+    # For some reason this 'xen' thing takes up an extra 50-70ish MB compared
+    # to the original iso ... not sure to understand ... but doesn't seem to be
+    # actually used anywhere so let's get rid of it to save space ...
+    os.system(f"chmod +w '{path_to_extracted_iso_dir}/install.amd'")
+    os.system(f"chmod -R +w '{path_to_extracted_iso_dir}/install.amd/xen'")
+    os.system(f"rm -rf '{path_to_extracted_iso_dir}/install.amd/xen'")
+    os.system(f"chmod -w '{path_to_extracted_iso_dir}/install.amd'")
+
+    # ADd the input files to the extracted ISO
+    os.system(f"chmod +w {path_to_extracted_iso_dir}/isolinux/*")
+    os.system(f"cp -r ./files_to_inject/* {path_to_extracted_iso_dir}/")
+    os.system(f"chmod -w {path_to_extracted_iso_dir}/isolinux/*")
+
+    # This stuff gotta go into the initrd with cpio trick etc
     temp_file_dir = TemporaryDirectory()
-    path_to_file_dir = Path(temp_file_dir.name)
-    for path_to_file in input_file_paths:
-        p.info(f"Appending {path_to_file.name} to initrd...")
-        path_to_file_copy = path_to_file_dir/path_to_file.name
-        shutil.copy(path_to_file, path_to_file_copy)
-        append_file_contents_to_initrd_archive(
-            path_to_extracted_iso_dir/"install.amd"/"initrd.gz",
-            path_to_file_copy
-        )
-        p.ok(f"{path_to_file.name} appended successfully.")
+    os.system(f"mkdir -p {temp_file_dir.name}/usr/share/graphics/")
+    os.system(f"cp ./files_to_inject/logo.png {temp_file_dir.name}/usr/share/graphics/logo_debian.png")
+    append_file_contents_to_initrd_archive(
+        path_to_extracted_iso_dir/"install.amd"/"gtk"/"initrd.gz",
+        temp_file_dir.name,
+        "usr/share/graphics/logo_debian.png"
+    )
 
     # regenerate extracted ISO's md5sum.txt file
     p.info("Regenerating MD5 checksums...")
