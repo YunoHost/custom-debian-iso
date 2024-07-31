@@ -449,7 +449,7 @@ def inject_files_into_iso(
         path_to_output_iso_file = Path(path_to_output_iso_file).expanduser()
     path_to_output_iso_file = Path(path_to_output_iso_file).resolve()
     if path_to_output_iso_file.is_file():
-        raise FileExistsError(f"Output file exists: '{path_to_input_iso_file}'.")
+        raise FileExistsError(f"Output file exists: '{path_to_output_iso_file}'.")
     if not path_to_output_iso_file.parent.is_dir():
         raise NotADirectoryError(f"No such directory: '{path_to_output_iso_file.parent}'.")
 
@@ -482,6 +482,8 @@ def inject_files_into_iso(
     p.ok("MBR extraction complete.")
 
     arch = "amd" if "amd64" in path_to_input_iso_file.name else "386"
+    dist = "bookworm" if "debian-12" in path_to_input_iso_file.name else "bullseye"
+    testing = "testing" if dist == "bookworm" else ""
 
     # For some reason this 'xen' thing takes up an extra 50-70ish MB compared
     # to the original iso ... not sure to understand ... but doesn't seem to be
@@ -495,7 +497,10 @@ def inject_files_into_iso(
     os.system(f"chmod -R +w {path_to_extracted_iso_dir}/isolinux")
     os.system(f"cp -r ./files_to_inject/* {path_to_extracted_iso_dir}/")
     os.system(f'sed "s@__ARCH__@{arch}@g" -i "{path_to_extracted_iso_dir}/isolinux/menu.cfg"')
+    os.system(f'sed "s@__DIST__@{dist}@g" -i "{path_to_extracted_iso_dir}/preseeds/"*')
+    os.system(f'sed "s@__TESTING__@{testing}@g" -i "{path_to_extracted_iso_dir}/preseeds/"*')
     os.system(f"chmod -R -w {path_to_extracted_iso_dir}/isolinux")
+    os.system(f"chmod -R -w {path_to_extracted_iso_dir}/preseeds")
 
     # This stuff gotta go into the initrd with cpio trick etc
     temp_file_dir = TemporaryDirectory()
