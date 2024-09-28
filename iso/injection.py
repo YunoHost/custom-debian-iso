@@ -493,15 +493,19 @@ def inject_files_into_iso(
     os.system(f"rm -rf '{path_to_extracted_iso_dir}/install.{arch}/xen'")
     os.system(f"chmod -w '{path_to_extracted_iso_dir}/install.{arch}'")
 
-    # ADd the input files to the extracted ISO
+    # Add the input files to the extracted ISO
     os.system(f"chmod +w {path_to_extracted_iso_dir}/boot/grub")
     os.system(f"chmod +w {path_to_extracted_iso_dir}/boot/grub/grub.cfg")
+    os.system(f"chmod +w {path_to_extracted_iso_dir}/boot/grub/theme")
     os.system(f"chmod -R +w {path_to_extracted_iso_dir}/isolinux")
+
     os.system(f"cp -r ./files_to_inject/* {path_to_extracted_iso_dir}/")
     os.system(f'sed "s@__ARCH__@{arch}@g" -i "{path_to_extracted_iso_dir}/isolinux/menu.cfg"')
     os.system(f'sed "s@__DIST__@{dist}@g" -i "{path_to_extracted_iso_dir}/preseeds/"*')
     os.system(f'sed "s@__TESTING__@{testing}@g" -i "{path_to_extracted_iso_dir}/preseeds/"*')
+
     os.system(f"chmod -w {path_to_extracted_iso_dir}/boot/grub")
+    os.system(f"chmod -w -R {path_to_extracted_iso_dir}/boot/grub/theme")
     os.system(f"chmod -w {path_to_extracted_iso_dir}/boot/grub/grub.cfg")
     os.system(f"chmod -R -w {path_to_extracted_iso_dir}/isolinux")
     os.system(f"chmod -R -w {path_to_extracted_iso_dir}/preseeds")
