@@ -483,7 +483,7 @@ def inject_files_into_iso(
 
     arch = "amd" if "amd64" in path_to_input_iso_file.name else "386"
     dist = "bookworm" if "debian-12" in path_to_input_iso_file.name else "bullseye"
-    testing = "testing" if dist == "bookworm" else ""
+    testing = "" # To be set to literally "testing" for trixie later
 
     # For some reason this 'xen' thing takes up an extra 50-70ish MB compared
     # to the original iso ... not sure to understand ... but doesn't seem to be
