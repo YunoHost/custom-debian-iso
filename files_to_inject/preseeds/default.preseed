@@ -37,8 +37,10 @@ d-i partman-lvm/confirm boolean true
 d-i partman-auto-lvm/guided_size string max
 
 d-i partman/confirm_write_new_label boolean true
-d-i partman/choose_partition select finish
-d-i partman/confirm boolean true
+# These lines are commented to keep displaying the partitioning info and ask confirmation
+# because it's deemed to brutal to savagely format the disk without asking confirmation here
+#d-i partman/choose_partition select finish
+#d-i partman/confirm boolean true
 d-i partman/confirm_nooverwrite boolean true
 d-i partman-lvm/confirm_nooverwrite boolean true
 
