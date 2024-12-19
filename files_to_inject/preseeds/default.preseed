@@ -27,32 +27,14 @@ d-i partman-auto/method string lvm
 d-i partman-lvm/device_remove_lvm boolean true
 d-i partman-md/device_remove_md boolean true
 d-i partman-auto/choose_recipe select atomic
+# "atomic" corresponds to:
+# https://salsa.debian.org/installer-team/partman-auto/-/blob/162/recipes/atomic
+# https://salsa.debian.org/installer-team/partman-auto/-/blob/162/recipes-amd64-efi/atomic
 d-i partman-lvm/device_remove_lvm_span boolean true
 d-i partman-auto/purge_lvm_from_device boolean true
 d-i partman-auto-lvm/new_vg_name string system
 d-i partman-lvm/confirm boolean true
 d-i partman-auto-lvm/guided_size string max
-d-i partman-auto/expert_recipe string                         \
-      boot-root ::                                            \
-              128 256 256 ext4                                \
-                      $primary{ }                             \
-                      $bootable{ }                            \
-                      method{ format } format{ }              \
-                      use_filesystem{ } filesystem{ ext4 }    \
-                      mountpoint{ /boot }                     \
-              .                                               \
-              512 1024 1024 linux-swap                        \
-                      $lvmok{ }                               \
-                      lv_name{ swap }                         \
-                      method{ swap } format{ }                \
-              .                                               \
-              4096 4096 1000000000 ext4                       \
-                      $lvmok{ }                               \
-                      lv_name{ root }                         \
-                      method{ format } format{ }              \
-                      use_filesystem{ } filesystem{ ext4 }    \
-                      mountpoint{ / }                         \
-              .
 
 d-i partman/confirm_write_new_label boolean true
 d-i partman/choose_partition select finish
