@@ -49,6 +49,7 @@ d-i passwd/root-password-crypted password $1$6xBdkGvE$8nLCNRxwABespdFJniEiX0
 d-i passwd/make-user boolean false
 
 ### Base system installation
+d-i apt-setup/non-free-firmware boolean true
 d-i apt-setup/non-free boolean false
 d-i apt-setup/contrib boolean true
 
