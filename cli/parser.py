@@ -76,7 +76,7 @@ def get_argument_parser():
         "--ynh-branch",
         action='store',
         type=str,
-        dest='branch',
+        dest='ynh_branch',
         choices=["stable", "testing", "unstable"],
         default="stable",
         help="YNH Branch to use stable, testing, unstable",
