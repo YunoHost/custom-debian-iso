@@ -104,13 +104,6 @@ mysql-server-5.5 mysql-server/root_password password yunohost
 mysql-server-5.5 mysql-server/root_password_again password yunohost
 mariadb-server-10.0 mysql-server/root_password password yunohost
 mariadb-server-10.0 mysql-server/root_password_again password yunohost
-nslcd nslcd/ldap-bindpw password
-nslc nslcd/ldap-starttls boolean false
-nslcd nslcd/ldap-reqcert select
-nslcd nslcd/ldap-uris string ldap://localhost/
-nslcd nslcd/ldap-binddn string
-nslcd nslcd/ldap-base string dc=yunohost,dc=org
-libnss-ldapd libnss-ldapd/nsswitch multiselect group, passwd, shadow
 postsrsd postsrsd/domain string yunohost.org
 
 ### Avoid circular dependencies error
