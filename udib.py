@@ -134,6 +134,7 @@ def main():
             path_to_image_file,
             iso_filesystem_name="YunoHost install image",
             printer=p,
+            ynh_branch=args.ynh_branch
         )
 
         # clear out temporary directory if one was created earlier
