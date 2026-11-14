@@ -489,7 +489,7 @@ def inject_files_into_iso(
     if ynh_branch == "testing":
         ynh_branches += " testing"
     elif ynh_branch == "unstable":
-        ynh_branches += " unstable"
+        ynh_branches += " testing unstable"
 
     # For some reason this 'xen' thing takes up an extra 50-70ish MB compared
     # to the original iso ... not sure to understand ... but doesn't seem to be
