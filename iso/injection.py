@@ -484,6 +484,8 @@ def inject_files_into_iso(
 
     arch = "amd" if "amd64" in path_to_input_iso_file.name else "386"
     dist = os.system("find {path_to_extracted_iso_dir}/dists -maxdepth 1 -mindepth 1 -type d").split("/")[-1]
+    dist = subprocess.check_output(["/bin/find", f"{path_to_extracted_iso_dir}/dists", "-maxdepth", "1", "-mindepth", "1", "-type", "d"])
+    dist = dist.decode().split("∕")[-1].replace("\n", "")
     ynh_branches = "stable"
     if ynh_branch == "testing":
         ynh_branches += " testing"
