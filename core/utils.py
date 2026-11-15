@@ -1,6 +1,6 @@
 """A collection of general utilities, not specific to any module."""
 
-from crypt import crypt, METHOD_SHA512
+import passlib.hash
 from getpass import getpass
 from os import remove, rename
 from pathlib import Path
@@ -37,7 +37,7 @@ def hash_user_password(printer=None):
         return
 
     p.info("Password hash:")
-    p.info(crypt(password, METHOD_SHA512))
+    p.info(passlib.hash.sha512_crypt.hash(password))
 
 def assert_system_dependencies_installed():
     """Checks whether all system dependencies required by udib are installed.
