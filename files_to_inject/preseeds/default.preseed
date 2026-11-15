@@ -105,4 +105,4 @@ libnss-ldapd libnss-ldapd/nsswitch multiselect group, passwd, shadow
 postsrsd postsrsd/domain string yunohost.org
 
 ### Avoid circular dependencies error
-d-i preseed/early_command string apt-install debhelper libldap-common
+d-i preseed/early_command string in-target apt install --assume-yes -o Dpkg::Options::="--force-confold" debhelper libldap-common
