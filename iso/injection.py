@@ -485,6 +485,7 @@ def inject_files_into_iso(
     arch = "amd" if "amd64" in path_to_input_iso_file.name else "386"
     dist = subprocess.check_output(["/bin/find", f"{path_to_extracted_iso_dir}/dists", "-maxdepth", "1", "-mindepth", "1", "-type", "d"])
     dist = dist.decode().split("/")[-1].replace("\n", "")
+    version = subprocess.check_output(["/bin/grep", "--color=never", "Version:", f"{path_to_extracted_iso_dir}/dists/{dist}/Release"]).decode().split(" ")[-1].split(".")[0]
     ynh_branches = "stable"
     if ynh_branch == "testing":
         ynh_branches += " testing"
@@ -507,6 +508,7 @@ def inject_files_into_iso(
 
     os.system(f"cp -r ./files_to_inject/* {path_to_extracted_iso_dir}/")
     os.system(f'sed "s@__ARCH__@{arch}@g" -i "{path_to_extracted_iso_dir}/isolinux/menu.cfg"')
+    os.system(f'sed "s@__VERSION__@{version}{ynh_branches}@g" -i "{path_to_extracted_iso_dir}/isolinux/menu.cfg"')
     os.system(f'sed "s@__DIST__@{dist}@g" -i "{path_to_extracted_iso_dir}/preseeds/"*')
     os.system(f'sed "s@__BRANCHES__@{ynh_branches}@g" -i "{path_to_extracted_iso_dir}/preseeds/"*')
 
