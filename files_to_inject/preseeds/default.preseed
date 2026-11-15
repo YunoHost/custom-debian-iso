@@ -68,7 +68,7 @@ d-i apt-setup/cdrom/set-failed boolean false
 tasksel tasksel/first multiselect standard, ssh-server
 # Keep postfix in here, otherwise exim4 might get installed and create a weird
 # conflict...
-d-i pkgsel/include string postfix yunohost yunohost-admin yunohost-portal
+d-i pkgsel/include string postfix yunohost-admin yunohost-portal
 d-i pkgsel/upgrade select none
 
 ### Deactivate poll on popular packages
@@ -105,4 +105,6 @@ libnss-ldapd libnss-ldapd/nsswitch multiselect group, passwd, shadow
 postsrsd postsrsd/domain string yunohost.org
 
 ### Avoid circular dependencies error
-d-i preseed/early_command string in-target apt install --assume-yes -o Dpkg::Options::="--force-confold" debhelper libldap-common
+d-i preseed/early_command string apt-install debhelper || true
+### Avoid conflict on /etc/ldap/ldap.conf
+d-i preseed/late_command string apt-install yunohost
