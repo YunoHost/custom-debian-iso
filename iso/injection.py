@@ -488,8 +488,10 @@ def inject_files_into_iso(
     version = subprocess.check_output(["/bin/grep", "--color=never", "Version:", f"{path_to_extracted_iso_dir}/dists/{dist}/Release"]).decode().split(" ")[-1].split(".")[0]
     ynh_branches = "stable"
     if ynh_branch == "testing":
+        version += " testing"
         ynh_branches += " testing"
     elif ynh_branch == "unstable":
+        version += " unstable"
         ynh_branches += " testing unstable"
 
     # For some reason this 'xen' thing takes up an extra 50-70ish MB compared
@@ -508,7 +510,7 @@ def inject_files_into_iso(
 
     os.system(f"cp -r ./files_to_inject/* {path_to_extracted_iso_dir}/")
     os.system(f'sed "s@__ARCH__@{arch}@g" -i "{path_to_extracted_iso_dir}/isolinux/menu.cfg"')
-    os.system(f'sed "s@__VERSION__@{version}{ynh_branches}@g" -i "{path_to_extracted_iso_dir}/isolinux/menu.cfg"')
+    os.system(f'sed "s@__VERSION__@{version}@g" -i "{path_to_extracted_iso_dir}/isolinux/menu.cfg"')
     os.system(f'sed "s@__DIST__@{dist}@g" -i "{path_to_extracted_iso_dir}/preseeds/"*')
     os.system(f'sed "s@__BRANCHES__@{ynh_branches}@g" -i "{path_to_extracted_iso_dir}/preseeds/"*')
 
