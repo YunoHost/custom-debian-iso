@@ -13,11 +13,6 @@ d-i mirror/http/directory string /debian
 d-i mirror/http/proxy string
 
 ### Localization
-
-d-i tzdata/Areas select Europe
-d-i localechooser/continentlist select Europe
-d-i time/zone string Europe/Paris
-d-i time/zone seen false
 d-i clock-setup/utc boolean true
 d-i clock-setup/ntp boolean true
 d-i clock-setup/ntp-server string 0.fr.pool.ntp.org
@@ -57,7 +52,7 @@ d-i apt-setup/services-select multiselect security, updates
 d-i apt-setup/security_host string security.debian.org
 
 d-i apt-setup/local0/repository string \
-	http://repo.yunohost.org/debian/ __DIST__ stable __TESTING__
+	http://repo.yunohost.org/debian/ __DIST__ __BRANCHES__
 d-i apt-setup/local0/key string http://repo.yunohost.org/keys/yunohost___DIST__.asc
 d-i apt-setup/local0/comment string YunoHost repository
 #d-i debian-installer/allow_unauthenticated string true
@@ -73,7 +68,8 @@ d-i apt-setup/cdrom/set-failed boolean false
 tasksel tasksel/first multiselect standard, ssh-server
 # Keep postfix in here, otherwise exim4 might get installed and create a weird
 # conflict...
-d-i pkgsel/include string postfix yunohost yunohost-admin
+# Install ynh dependencies first
+d-i pkgsel/include string postfix python3-all moulinette ssowat python3-psutil python3-requests python3-dnspython python3-openssl python3-miniupnpc python3-dbus python3-jinja2 python3-toml python3-packaging python3-publicsuffix2 python3-ldap python3-zeroconf python3-lexicon python3-cryptography python3-jwt python3-passlib python3-magic python-is-python3 python3-pydantic python3-email-validator python3-pydantic-extra-types python3-sortedcollections python3-sdbus python3-debian udisks2 udisks2-btrfs udisks2-lvm2 smartmontools python3-zmq nginx nginx-extras libnginx-mod-http-headers-more-filter apt apt-transport-https apt-utils aptitude dirmngr openssh-server nftables fail2ban bind9-dnsutils openssl ca-certificates netcat-openbsd iproute2 sudo sssd sssd-tools libsss-sudo sssd-ldap slapd ldap-utils libnss-sss libpam-sss dnsmasq resolvconf libnss-myhostname postfix-ldap postfix-policyd-spf-perl postfix-pcre libsasl2-modules dovecot-core dovecot-imapd dovecot-ldap dovecot-lmtpd dovecot-managesieved opendkim-tools opendkim postsrsd procmail mailutils acl git curl wget cron unzip jq bc at procps j2cli lsb-release haveged fake-hwclock lsof whois xz-utils zstd
 d-i pkgsel/upgrade select none
 
 ### Deactivate poll on popular packages
@@ -91,27 +87,25 @@ d-i cdrom-detect/eject boolean true
 d-i debian-installer/exit/reboot boolean true
 
 ### YunoHost Debconf (same than in yunohost/install_script)
-slapd slapd/password1 password yunohost
-slapd slapd/password2 password yunohost
-slapd slapd/domain string yunohost.org
-slapd shared/organization string yunohost.org
-slapd slapd/allow_ldap_v2 boolean false
+slapd slapd/password1      password yunohost
+slapd slapd/password2      password yunohost
+slapd slapd/domain         string yunohost.org
+slapd shared/organization  string yunohost.org
+slapd slapd/allow_ldap_v2  boolean false
 slapd slapd/invalid_config boolean true
-slapd slapd/backend select MDB
+slapd slapd/backend        select MDB
 postfix postfix/main_mailer_type select Internet Site
-postfix postfix/mailname string /etc/mailname
-mysql-server-5.5 mysql-server/root_password password yunohost
-mysql-server-5.5 mysql-server/root_password_again password yunohost
-mariadb-server-10.0 mysql-server/root_password password yunohost
-mariadb-server-10.0 mysql-server/root_password_again password yunohost
-nslcd nslcd/ldap-bindpw password
-nslc nslcd/ldap-starttls boolean false
-nslcd nslcd/ldap-reqcert select
-nslcd nslcd/ldap-uris string ldap://localhost/
-nslcd nslcd/ldap-binddn string
-nslcd nslcd/ldap-base string dc=yunohost,dc=org
+postfix postfix/mailname         string /etc/mailname
+nslcd nslcd/ldap-bindpw    password
+nslcd nslcd/ldap-starttls  boolean false
+nslcd nslcd/ldap-reqcert   select
+nslcd nslcd/ldap-uris      string ldap://localhost/
+nslcd nslcd/ldap-binddn    string
+nslcd nslcd/ldap-base      string dc=yunohost,dc=org
 libnss-ldapd libnss-ldapd/nsswitch multiselect group, passwd, shadow
 postsrsd postsrsd/domain string yunohost.org
 
 ### Avoid circular dependencies error
 d-i preseed/early_command string apt-install debhelper || true
+### Avoid conflict on /etc/ldap/ldap.conf
+d-i preseed/late_command string apt-install yunohost yunohost-admin yunohost-portal

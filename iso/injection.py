@@ -415,6 +415,7 @@ def inject_files_into_iso(
         path_to_input_iso_file,
         iso_filesystem_name="Debian",
         printer=None,
+        ynh_branch="stable"
 ):
     """Injects the specified input files into the specified ISO file.
 
@@ -482,8 +483,16 @@ def inject_files_into_iso(
     p.ok("MBR extraction complete.")
 
     arch = "amd" if "amd64" in path_to_input_iso_file.name else "386"
-    dist = "bookworm" if "debian-12" in path_to_input_iso_file.name else "bullseye"
-    testing = "" # To be set to literally "testing" for trixie later
+    dist = subprocess.check_output(["/bin/find", f"{path_to_extracted_iso_dir}/dists", "-maxdepth", "1", "-mindepth", "1", "-type", "d"])
+    dist = dist.decode().split("/")[-1].replace("\n", "")
+    version = subprocess.check_output(["/bin/grep", "--color=never", "Version:", f"{path_to_extracted_iso_dir}/dists/{dist}/Release"]).decode().split(" ")[-1].split(".")[0]
+    ynh_branches = "stable"
+    if ynh_branch == "testing":
+        version += " testing"
+        ynh_branches += " testing"
+    elif ynh_branch == "unstable":
+        version += " unstable"
+        ynh_branches += " testing unstable"
 
     # For some reason this 'xen' thing takes up an extra 50-70ish MB compared
     # to the original iso ... not sure to understand ... but doesn't seem to be
@@ -501,8 +510,9 @@ def inject_files_into_iso(
 
     os.system(f"cp -r ./files_to_inject/* {path_to_extracted_iso_dir}/")
     os.system(f'sed "s@__ARCH__@{arch}@g" -i "{path_to_extracted_iso_dir}/isolinux/menu.cfg"')
+    os.system(f'sed "s@__VERSION__@{version}@g" -i "{path_to_extracted_iso_dir}/isolinux/menu.cfg"')
     os.system(f'sed "s@__DIST__@{dist}@g" -i "{path_to_extracted_iso_dir}/preseeds/"*')
-    os.system(f'sed "s@__TESTING__@{testing}@g" -i "{path_to_extracted_iso_dir}/preseeds/"*')
+    os.system(f'sed "s@__BRANCHES__@{ynh_branches}@g" -i "{path_to_extracted_iso_dir}/preseeds/"*')
 
     os.system(f"chmod -w {path_to_extracted_iso_dir}/boot/grub")
     os.system(f"chmod -w -R {path_to_extracted_iso_dir}/boot/grub/theme")

@@ -71,4 +71,15 @@ def get_argument_parser():
         help="Path to the ISO you want to modify",
     )
 
+    subparser_inject.add_argument(
+        "-b",
+        "--ynh-branch",
+        action='store',
+        type=str,
+        dest='ynh_branch',
+        choices=["stable", "testing", "unstable"],
+        default="stable",
+        help="YNH Branch to use stable, testing, unstable",
+    )
+
     return mainparser
